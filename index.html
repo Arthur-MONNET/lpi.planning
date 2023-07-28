@@ -591,7 +591,6 @@ generateDaysHTML();
 function generateDays(firstDay) {
     let days = [];
     // si on a dépassé 21h, on passe au jour suivant
-    firstDay.hour(13);
     if (now.hour() >= 21) {
         firstDay.add(1, 'day');
         firstDay.hour(0);
