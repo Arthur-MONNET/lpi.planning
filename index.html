@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- icon -->
     <link rel="icon" href="../Group-249.ico">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js" integrity="sha512-Dz4zO7p6MrF+VcOD6PUbA08hK1rv0hDv/wGuxSUjImaUYxRyK2gLC6eQWVqyDN9IM1X/kUA8zkykJS/gEVOd3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"
+        integrity="sha512-Dz4zO7p6MrF+VcOD6PUbA08hK1rv0hDv/wGuxSUjImaUYxRyK2gLC6eQWVqyDN9IM1X/kUA8zkykJS/gEVOd3w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!--tailwind-->
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Planning</title>
@@ -14,13 +19,18 @@
         ::-webkit-scrollbar {
             display: none;
         }
-        *{
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+
+        * {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
         }
+
         .day.selected::after {
             opacity: 1;
         }
+
         .task.current {
             background-color: #7296e329;
         }
@@ -28,20 +38,43 @@
         .task.finished .task-text {
             opacity: 0.3;
         }
+
+        #modal-from-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background-color: #f7f7f7;
+            z-index: 100;
+            transition: height 0.3s ease-in-out;
+        }
+
+        #modal-from-bottom.open {
+            height: 95vh;
+        }
     </style>
 </head>
-<body class="flex flex-col items-strech justify-start w-screen h-screen bg-[#f7f7f7]">
-    <nav class="flex flex-row justify-between items-center w-full border-bottom-[#090a0b0d] border border-solid">
+
+<body class="flex flex-col items-strech justify-start w-screen bg-[#f7f7f7]">
+    <nav
+        class="flex flex-row justify-between items-center w-full border-bottom-[#090a0b0d] border border-solid bg-[#f7f7f7] z-30 fixed top-0 left-0 h-[115px] min-h-[115px]">
         <div id="days" class="flex flex-row overflow-x-scroll gap-[7px] py-[20px] px-[15px]">
         </div>
-        <div id="download" class="bg-white border-white border border-solid rounded p-1 mr-[15px] h-[72px] min-h-[72px] w-[56px] min-w-[56px] flex flex-col justify-center items-center shadow-[-5px_0px_10px_10px_#F7F7F799]">
-            <a href="../planning.pdf" download="planning.pdf"><i class="fas fa-download" style="font-size: 22px;"></i></a>
+        <div id="download"
+            class="bg-white border-white border border-solid rounded p-1 mr-[15px] h-[72px] min-h-[72px] w-[56px] min-w-[56px] flex flex-col justify-center items-center shadow-[-5px_0px_10px_10px_#F7F7F799]">
+            <a href="../planning.pdf" download="planning.pdf"><i class="fas fa-download"
+                    style="font-size: 22px;"></i></a>
         </div>
     </nav>
     <main>
-        <div id="tasks">
+        <div id="tasks" class="flex flex-col items-strech justify-start w-full pt-[115px]">
         </div>
+
     </main>
+    <div id="modal-from-bottom">
+
+    </div>
     <script>
         /* site planning de la semaine ( mobile only )
 header : 
@@ -67,599 +100,598 @@ un système de mot de passe est mis en place pour accéder au planning
 
 */
 
-// Path: js\index.js
+        // Path: js\index.js
 
-const daysWrapper = document.querySelector('#days');
-const tasksWrapper = document.querySelector('#tasks');
+        const daysWrapper = document.querySelector('#days');
+        const tasksWrapper = document.querySelector('#tasks');
 
-const now = moment();
+        const now = moment();
+        let selectedDay = now.format('DD-MM-YYYY');
 
-const tradDays = {
-    monday: {
-        complete: 'Lundi',
-        short: 'Lun.',
-    },
-    tuesday: {
-        complete: 'Mardi',
-        short: 'Mar.',
-    },
-    wednesday: {
-        complete: 'Mercredi',
-        short: 'Mer.',
-    },
-    thursday: {
-        complete: 'Jeudi',
-        short: 'Jeu.',
-    },
-    friday: {
-        complete: 'Vendredi',
-        short: 'Ven.',
-    },
-    saturday: {
-        complete: 'Samedi',
-        short: 'Sam.',
-    },
-    sunday: {
-        complete: 'Dimanche',
-        short: 'Dim.',
-    },
-};
-const tradMonths = {
-    january: {
-        complete: 'Janvier',
-        short: 'Jan.',
-    },
-    february: {
-        complete: 'Février',
-        short: 'Fév.',
-    },
-    march: {
-        complete: 'Mars',
-        short: 'Mar.',
-    },
-    april: {
-        complete: 'Avril',
-        short: 'Avr.',
-    },
-    may: {
-        complete: 'Mai',
-        short: 'Mai',
-    },
-    june: {
-        complete: 'Juin',
-        short: 'Juin',
-    },
-    july: {
-        complete: 'Juillet',
-        short: 'Juil.',
-    },
-    august: {
-        complete: 'Août',
-        short: 'Août',
-    },
-    september: {
-        complete: 'Septembre',
-        short: 'Sept.',
-    },
-    october: {
-        complete: 'Octobre',
-        short: 'Oct.',
-    },
-    november: {
-        complete: 'Novembre',
-        short: 'Nov.',
-    },
-    december: {
-        complete: 'Décembre',
-        short: 'Déc.',
-    },
-};
-const workers = [
-    {
-        name: 'Salarié',
-        color: '#7f8fa6',
-    },
-    {
-        name: 'Myriam',
-        color: '#be738d',
-    },
-    {
-        name: 'Lucie',
-        color: '#88a069',
-    },
-    {
-        name: 'Producteur',
-        color: '#cab06d',
-    }
-];
-
-const week = {
-    odd: {
-        monday: [
-            {
-                worker: 0,
-                task: 'ouverture + matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
+        const tradDays = {
+            monday: {
+                complete: 'Lundi',
+                short: 'Lun.',
             },
-            {
-                worker: 0,
-                task: 'après-midi + fermeture',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
+            tuesday: {
+                complete: 'Mardi',
+                short: 'Mar.',
             },
-            {
-                worker: 2, // Lucie
-                task: 'ouverture + matinée + midi',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('14:00', 'HH:mm'),
+            wednesday: {
+                complete: 'Mercredi',
+                short: 'Mer.',
             },
-            {
-                worker: 3,
-                task: 'matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
+            thursday: {
+                complete: 'Jeudi',
+                short: 'Jeu.',
             },
-            {
-                worker: 3,
-                task: 'après-midi',
-                start: moment('16:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
+            friday: {
+                complete: 'Vendredi',
+                short: 'Ven.',
             },
-        ],
-        tuesday: [
-            {
-                worker: 0, // Valérie
-                task: 'ouverture + matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
+            saturday: {
+                complete: 'Samedi',
+                short: 'Sam.',
             },
-            {
-                worker: 1, // Myriam
-                task: 'bureau',
-                start: moment('10:00', 'HH:mm'),
-                end: moment('15:00', 'HH:mm'),
+            sunday: {
+                complete: 'Dimanche',
+                short: 'Dim.',
             },
-            {
-                worker: 1, // Myriam
-                task: 'après-midi + fermeture',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 2, // Lucie
-                task: 'midi + après-midi + fermeture',
-                start: moment('13:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'après-midi',
-                start: moment('16:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-        ],
-        wednesday: [
-            {
-                worker: 1, // Myriam
-                task: 'ouverture + matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 2, // Lucie
-                task: 'après-midi + fermeture',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'après-midi',
-                start: moment('16:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-        ],
-        thursday: [
-            {
-                worker: 0, // Valérie
-                task: 'ouverture + matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 1, // Myriam
-                task: 'bureau',
-                start: moment('11:00', 'HH:mm'),
-                end: moment('15:00', 'HH:mm'),
-            },
-            {
-                worker: 1, // Myriam
-                task: 'après-midi + fermeture',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'après-midi',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-        ],
-        friday: [
-            {
-                worker: 0, // Valérie
-                task: 'ouverture + matinée + midi',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('15:00', 'HH:mm'),
-            },
-            {
-                worker: 1, // Myriam
-                task: 'bureau',
-                start: moment('11:00', 'HH:mm'),
-                end: moment('15:00', 'HH:mm'),
-            },
-            {
-                worker: 1, // Myriam
-                task: 'après-midi + fermeture',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 2, // Lucie
-                task: 'ouverture + matinée + midi',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('14:00', 'HH:mm'),
-            },
-            {
-                worker: 2, // Lucie
-                task: 'après-midi',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('19:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'après-midi',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-        ],
-        saturday: [
-            {
-                worker: 0, // Valérie
-                task: 'journee complète',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 2, // Lucie
-                task: 'matinée + midi + après-midi',
-                start: moment('10:00', 'HH:mm'),
-                end: moment('17:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'après-midi',
-                start: moment('16:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-        ],
-        sunday: [],
-    },
-    even: {
-        monday: [
-            {
-                worker: 0, // Valérie
-                task: 'ouverture + matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 0,
-                task: 'après-midi + fermeture',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 2, // Lucie
-                task: 'ouverture + matinée + midi',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('15:45', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'après-midi',
-                start: moment('16:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-        ],
-        tuesday: [
-            {
-                worker: 0, // Valérie
-                task: 'ouverture + matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 0, // Valérie
-                task: 'bureau',
-                start: moment('13:00', 'HH:mm'),
-                end: moment('15:00', 'HH:mm'),
-            },
-            {
-                worker: 0, // Valérie
-                task: 'début d\'après-midi',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('16:00', 'HH:mm'),
-            },
-            {
-                worker: 1, // Myriam
-                task: 'bureau',
-                start: moment('10:00', 'HH:mm'),
-                end: moment('16:00', 'HH:mm'),
-            },
-            {
-                worker: 1, // Myriam
-                task: 'après-midi + fermeture',
-                start: moment('16:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 2, // Lucie
-                task: 'midi + après-midi + fermeture',
-                start: moment('13:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'après-midi',
-                start: moment('16:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-        ],
-        wednesday: [
-            {
-                worker: 1, // Myriam
-                task: 'ouverture + matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 2, // Lucie
-                task: 'après-midi + fermeture',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'après-midi',
-                start: moment('16:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-        ],
-        thursday: [
-            {
-                worker: 0, // Valérie
-                task: 'ouverture + matinée',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 1, // Myriam
-                task: 'bureau',
-                start: moment('12:30', 'HH:mm'),
-                end: moment('15:00', 'HH:mm'),
-            },
-            {
-                worker: 1, // Myriam
-                task: 'après-midi + fermeture',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'matinée',
-                start: moment('09:00', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'après-midi',
-                start: moment('16:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-        ],
-        friday: [
-            {
-                worker: 0, // Valérie
-                task: 'journee complète',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 1, // Myriam
-                task: 'bureau',
-                start: moment('09:00', 'HH:mm'),
-                end: moment('14:00', 'HH:mm'),
-            },
-            {
-                worker: 2, // Lucie
-                task: 'ouverture + matinée + midi',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('14:00', 'HH:mm'),
-            },
-            {
-                worker: 2, // Lucie
-                task: 'après-midi',
-                start: moment('15:00', 'HH:mm'),
-                end: moment('19:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'matinée',
-                start: moment('09:00', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'après-midi',
-                start: moment('16:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-        ],
-        saturday: [
-            {
-                worker: 1, // Myriam
-                task: 'journee complète',
-                start: moment('08:45', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-            {
-                worker: 2, // Lucie
-                task: 'matinée + midi + après-midi',
-                start: moment('10:00', 'HH:mm'),
-                end: moment('17:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'matinée',
-                start: moment('09:00', 'HH:mm'),
-                end: moment('13:00', 'HH:mm'),
-            },
-            {
-                worker: 3,
-                task: 'après-midi',
-                start: moment('16:00', 'HH:mm'),
-                end: moment('20:00', 'HH:mm'),
-            },
-        ],
-        sunday: [],
-    }
-}
-
-const days = generateDays(now);
-
-generateDaysHTML();
-
-function generateDays(firstDay) {
-    let days = [];
-    // si on a dépassé 21h, on passe au jour suivant
-    if (now.hour() >= 21) {
-        firstDay.add(1, 'day');
-        firstDay.hour(0);
-    }
-    const firstWeekType = firstDay.week() % 2 === 0 ? 'even' : 'odd';
-    // si on est dimanche, on passe au lundi
-    if (firstDay.day() === 0) {
-        firstWeekType = firstWeekType === 'even' ? 'odd' : 'even';
-    }
-    const firstDayName = firstDay.format('dddd').toLowerCase();
-    if(week[firstWeekType][firstDayName].length === 0) {
-        firstDay.add(1, 'day');
-        firstDay.hour(0);
-    }
-
-    for (let i = 0; i < 7; i++) {
-        const day = firstDay.clone().add(i, 'day');
-        // si day est autre que le jour actuel, on passe à 0h
-        if (day.format('D') !== now.format('D')) {
-            // set to 0h
-            day.hour(0);
-        }
-        let weekType = day.week() % 2 === 0 ? 'even' : 'odd';
-        if(day.day() === 0) {
-            weekType = weekType === 'even' ? 'odd' : 'even';
-        }
-        const dayName = day.format('dddd').toLowerCase();
-        const monthName = day.format('MMMM').toLowerCase();
-        let tasks = week[weekType][dayName].sort((a, b) => a.start - b.start)
-        // set date + hour of start and end
-        for (const task of tasks) {
-            task.start.set({
-                year: day.year(),
-                month: day.month(),
-                date: day.date(),
-            });
-            task.end.set({
-                year: day.year(),
-                month: day.month(),
-                date: day.date(),
-            });
-        }
-        let finishedTasks = tasks.filter(task => task.end.isBefore(now));
-        let currentTask = tasks.filter(task => task.start.isBefore(now) && task.end.isAfter(now));
-        let nextTask = tasks.filter(task => task.start.isAfter(now));
-        tasks = [...finishedTasks, ...currentTask, ...nextTask];
-        const objDay = {
-            moment: day,
-            weekType: weekType,
-            shortDayName: tradDays[dayName].short,
-            dayNumber: day.format('DD'),
-            shortMonthName: tradMonths[monthName].short,
-            tasks,
         };
-        days.push(objDay);
-    }
-    console.log(days);
-    return days;
-}
+        const tradMonths = {
+            january: {
+                complete: 'Janvier',
+                short: 'Jan.',
+            },
+            february: {
+                complete: 'Février',
+                short: 'Fév.',
+            },
+            march: {
+                complete: 'Mars',
+                short: 'Mar.',
+            },
+            april: {
+                complete: 'Avril',
+                short: 'Avr.',
+            },
+            may: {
+                complete: 'Mai',
+                short: 'Mai',
+            },
+            june: {
+                complete: 'Juin',
+                short: 'Juin',
+            },
+            july: {
+                complete: 'Juillet',
+                short: 'Juil.',
+            },
+            august: {
+                complete: 'Août',
+                short: 'Août',
+            },
+            september: {
+                complete: 'Septembre',
+                short: 'Sept.',
+            },
+            october: {
+                complete: 'Octobre',
+                short: 'Oct.',
+            },
+            november: {
+                complete: 'Novembre',
+                short: 'Nov.',
+            },
+            december: {
+                complete: 'Décembre',
+                short: 'Déc.',
+            },
+        };
+        const workers = [
+            {
+                name: 'Salarié',
+                color: '#7f8fa6',
+            },
+            {
+                name: 'Myriam',
+                color: '#be738d',
+            },
+            {
+                name: 'Lucie',
+                color: '#88a069',
+            },
+            {
+                name: 'Producteur',
+                color: '#cab06d',
+            }
+        ];
 
-function generateDaysHTML() {
-    daysWrapper.innerHTML = '';
-    for (const day of days) {
-        const weekTypeColor = day.weekType === 'even' ? '#fbc531' : '#e84118';
-        let styleOfDayButton = "bg-white border-white border border-solid rounded p-1 h-[72px] min-h-[72px] w-[56px] min-w-[56px] flex flex-col justify-center items-center after:bg-[" + weekTypeColor + "] after:rounded-full after:content-'' after:opacity-0 after:block after:h-[3px] after:w-[24px] after:mb-[-4px]";
-        if(day.tasks.length === 0) {
-            styleOfDayButton = "bg-[#f7f7f7] border-[#090a0b0d] border border-solid rounded p-1 h-[72px] min-h-[72px] w-[56px] min-w-[56px] flex flex-col justify-center items-center after:bg-transparent after:rounded-full after:content-'' after:block after:h-[3px] after:w-[24px] after:mb-[-4px] pointer-events-none"
+        const week = {
+            odd: {
+                monday: [
+                    {
+                        worker: 0,
+                        task: 'ouverture + matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 0,
+                        task: 'après-midi + fermeture',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'ouverture + matinée + midi',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('14:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'après-midi',
+                        start: moment('16:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                ],
+                tuesday: [
+                    {
+                        worker: 0, // Valérie
+                        task: 'ouverture + matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'bureau',
+                        start: moment('10:00', 'HH:mm'),
+                        end: moment('15:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'après-midi + fermeture',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'midi + après-midi + fermeture',
+                        start: moment('13:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'après-midi',
+                        start: moment('16:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                ],
+                wednesday: [
+                    {
+                        worker: 1, // Myriam
+                        task: 'ouverture + matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'après-midi + fermeture',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'après-midi',
+                        start: moment('16:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                ],
+                thursday: [
+                    {
+                        worker: 0, // Valérie
+                        task: 'ouverture + matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'bureau',
+                        start: moment('11:00', 'HH:mm'),
+                        end: moment('15:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'après-midi + fermeture',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'après-midi',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                ],
+                friday: [
+                    {
+                        worker: 0, // Valérie
+                        task: 'ouverture + matinée + midi',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('15:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'bureau',
+                        start: moment('11:00', 'HH:mm'),
+                        end: moment('15:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'après-midi + fermeture',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'ouverture + matinée + midi',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('14:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'après-midi',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('19:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'après-midi',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                ],
+                saturday: [
+                    {
+                        worker: 0, // Valérie
+                        task: 'journee complète',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'matinée + midi + après-midi',
+                        start: moment('10:00', 'HH:mm'),
+                        end: moment('17:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'après-midi',
+                        start: moment('16:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                ],
+                sunday: [],
+            },
+            even: {
+                monday: [
+                    {
+                        worker: 0, // Valérie
+                        task: 'ouverture + matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 0,
+                        task: 'après-midi + fermeture',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'ouverture + matinée + midi',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('15:45', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'après-midi',
+                        start: moment('16:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                ],
+                tuesday: [
+                    {
+                        worker: 0, // Valérie
+                        task: 'ouverture + matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 0, // Valérie
+                        task: 'bureau',
+                        start: moment('13:00', 'HH:mm'),
+                        end: moment('15:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 0, // Valérie
+                        task: 'début d\'après-midi',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('16:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'bureau',
+                        start: moment('10:00', 'HH:mm'),
+                        end: moment('16:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'après-midi + fermeture',
+                        start: moment('16:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'midi + après-midi + fermeture',
+                        start: moment('13:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'après-midi',
+                        start: moment('16:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                ],
+                wednesday: [
+                    {
+                        worker: 1, // Myriam
+                        task: 'ouverture + matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'après-midi + fermeture',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'après-midi',
+                        start: moment('16:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                ],
+                thursday: [
+                    {
+                        worker: 0, // Valérie
+                        task: 'ouverture + matinée',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'bureau',
+                        start: moment('12:30', 'HH:mm'),
+                        end: moment('15:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'après-midi + fermeture',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'matinée',
+                        start: moment('09:00', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'après-midi',
+                        start: moment('16:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                ],
+                friday: [
+                    {
+                        worker: 0, // Valérie
+                        task: 'journee complète',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'bureau',
+                        start: moment('09:00', 'HH:mm'),
+                        end: moment('14:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'ouverture + matinée + midi',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('14:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'après-midi',
+                        start: moment('15:00', 'HH:mm'),
+                        end: moment('19:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'matinée',
+                        start: moment('09:00', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'après-midi',
+                        start: moment('16:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                ],
+                saturday: [
+                    {
+                        worker: 1, // Myriam
+                        task: 'journee complète',
+                        start: moment('08:45', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'matinée + midi + après-midi',
+                        start: moment('10:00', 'HH:mm'),
+                        end: moment('17:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'matinée',
+                        start: moment('09:00', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 3,
+                        task: 'après-midi',
+                        start: moment('16:00', 'HH:mm'),
+                        end: moment('20:00', 'HH:mm'),
+                    },
+                ],
+                sunday: [],
+            }
         }
-        const dayHTML = `
+        generateDays(now).then((days) => {
+            generateDaysHTML(days);
+        })
+
+        async function generateDays(firstDay) {
+            let days = [];
+            // si on a dépassé 21h, on passe au jour suivant
+            if (now.hour() >= 21) {
+                firstDay.add(1, 'day');
+                firstDay.hour(0);
+            }
+            const firstWeekType = firstDay.week() % 2 === 0 ? 'even' : 'odd';
+            // si on est dimanche, on passe au lundi
+            if (firstDay.day() === 0) {
+                firstWeekType = firstWeekType === 'even' ? 'odd' : 'even';
+            }
+            const firstDayName = firstDay.format('dddd').toLowerCase();
+            if (week[firstWeekType][firstDayName].length === 0) {
+                firstDay.add(1, 'day');
+                firstDay.hour(0);
+            }
+
+            for (let i = 0; i < 7; i++) {
+                const day = firstDay.clone().add(i, 'day');
+                // si day est autre que le jour actuel, on passe à 0h
+                if (day.format('D') !== now.format('D')) {
+                    // set to 0h
+                    day.hour(0);
+                }
+                let weekType = day.week() % 2 === 0 ? 'even' : 'odd';
+                if (day.day() === 0) {
+                    weekType = weekType === 'even' ? 'odd' : 'even';
+                }
+                const dayName = day.format('dddd').toLowerCase();
+                const monthName = day.format('MMMM').toLowerCase();
+                let tasks = week[weekType][dayName].sort((a, b) => a.start - b.start)
+                // set date + hour of start and end
+                for (const task of tasks) {
+                    task.start.set({
+                        year: day.year(),
+                        month: day.month(),
+                        date: day.date(),
+                    });
+                    task.end.set({
+                        year: day.year(),
+                        month: day.month(),
+                        date: day.date(),
+                    });
+                }
+                let finishedTasks = tasks.filter(task => task.end.isBefore(now));
+                let currentTask = tasks.filter(task => task.start.isBefore(now) && task.end.isAfter(now));
+                let nextTask = tasks.filter(task => task.start.isAfter(now));
+                tasks = [...finishedTasks, ...currentTask, ...nextTask];
+                const objDay = {
+                    moment: day,
+                    weekType: weekType,
+                    shortDayName: tradDays[dayName].short,
+                    dayNumber: day.format('DD'),
+                    shortMonthName: tradMonths[monthName].short,
+                    tasks,
+                };
+                days.push(objDay);
+            }
+            return days;
+        }
+
+        function generateDaysHTML(days) {
+            daysWrapper.innerHTML = '';
+            for (const day of days) {
+                const weekTypeColor = day.weekType === 'even' ? '#f3d269' : '#f4a08d';
+                let styleOfDayButton = "bg-white border-white border border-solid rounded p-1 h-[72px] min-h-[72px] w-[56px] min-w-[56px] flex flex-col justify-center items-center after:bg-[" + weekTypeColor + "] after:rounded-full after:content-'' after:opacity-0 after:block after:h-[3px] after:w-[24px] after:mb-[-4px]";
+                if (day.tasks.length === 0) {
+                    styleOfDayButton = "bg-[#f7f7f7] border-[#090a0b0d] border border-solid rounded p-1 h-[72px] min-h-[72px] w-[56px] min-w-[56px] flex flex-col justify-center items-center after:bg-transparent after:rounded-full after:content-'' after:block after:h-[3px] after:w-[24px] after:mb-[-4px] pointer-events-none"
+                }
+                const dayHTML = `
 <div class="day ${styleOfDayButton}"
 data-day="${day.moment.format('DD-MM-YYYY')}">
     <p class="day-name uppercase font-bold leading-[20px] ${day.tasks.length === 0 ? 'opacity-[0.3]' : ''}" style="font-size: 12px;"
@@ -669,53 +701,59 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
     <p class="day-month uppercase font-bold leading-[20px] ${day.tasks.length === 0 ? 'opacity-[0.3]' : ''}" style="font-size: 12px;"
     >${day.shortMonthName}</p>
 </div>`
-        daysWrapper.innerHTML += dayHTML;
-    }
-    // add calendar button
-    const calendarButton = `
+                daysWrapper.innerHTML += dayHTML;
+            }
+            // add calendar button
+            const calendarButton = `
 <div class="day bg-white border-white border border-solid rounded p-1 h-[72px] min-h-[72px] w-[56px] min-w-[56px] flex flex-col justify-center items-center" id="calendar-button">
     <i class="far fa-calendar-plus" style="font-size: 22px;"></i>
 </div>`
-    daysWrapper.innerHTML += calendarButton;
-    document.querySelector('.day').classList.add('selected');
-    generateTasksHTML(days[0]);
+            daysWrapper.innerHTML += calendarButton;
+            document.querySelector('.day').classList.add('selected');
+            selectedDay = days[0].moment.format('DD-MM-YYYY');
 
-    // event listeners
-    const daysElements = document.querySelectorAll('.day');
-    for (const dayElement of daysElements) {
-        dayElement.addEventListener('click', function () {
-            if (this.id === 'calendar-button') {
-                // open calendar
-                openCalendar();
-            } else {
-                // select day
-                for (const dayElement of daysElements) {
-                    dayElement.classList.remove('selected');
-                }
-                this.classList.add('selected');
-                const day = days.find(day => day.moment.format('DD-MM-YYYY') === this.dataset.day);
-                generateTasksHTML(day)
+            // scroll to start
+            daysWrapper.scrollLeft = 0;
+
+            generateTasksHTML(days[0]);
+
+            // event listeners
+            const daysElements = document.querySelectorAll('.day');
+            for (const dayElement of daysElements) {
+                dayElement.addEventListener('click', function () {
+                    if (this.id === 'calendar-button') {
+                        // open calendar
+                        openCalendar();
+                    } else {
+                        // select day
+                        for (const dayElement of daysElements) {
+                            dayElement.classList.remove('selected');
+                        }
+                        this.classList.add('selected');
+                        selectedDay = this.dataset.day;
+                        const day = days.find(day => day.moment.format('DD-MM-YYYY') === this.dataset.day);
+                        generateTasksHTML(day)
+                    }
+                });
             }
-        });
-    }
-}
-
-function generateTasksHTML(day) {
-    tasksWrapper.innerHTML = '';
-    let index = 1;
-    for (const task of day.tasks) {
-        const worker = workers[task.worker];
-        let textIndex = index < 10 ? `0${index}` : index;
-        let taskStart = task.start.format('HH:mm');
-        if(task.start.isBefore(now) && task.end.isAfter(now)) {
-            textIndex = '<i class="fas fa-hourglass-half text-white" style="font-size: 10px;"></i>';
-            taskStart = 'en cours';
         }
 
-        if(task.end.isBefore(now)) {
-            taskStart = 'terminé';
-        }
-        const taskHTML = `
+        function generateTasksHTML(day) {
+            tasksWrapper.innerHTML = '';
+            let index = 1;
+            for (const task of day.tasks) {
+                const worker = workers[task.worker];
+                let textIndex = index < 10 ? `0${index}` : index;
+                let taskStart = task.start.format('HH:mm');
+                if (task.start.isBefore(now) && task.end.isAfter(now)) {
+                    textIndex = '<i class="fas fa-hourglass-half text-white" style="font-size: 10px;"></i>';
+                    taskStart = 'en cours';
+                }
+
+                if (task.end.isBefore(now)) {
+                    taskStart = 'terminé';
+                }
+                const taskHTML = `
 <div class="task ${task.start.isBefore(now) && task.end.isAfter(now) ? 'current' : ''} ${task.end.isBefore(now) ? 'finished' : ''} h-[80px] min-h-[80px] w-full flex justify-between items-start px-[15px] pt-[10px]">
     <div class="task-content flex items-start gap-[10px] w-full">
     <p class="task-number bg-${taskStart === 'en cours' ? '[#7296e3]' : '[#b9b9b9]'} rounded-full min-w-[20px] min-h-[20px] flex justify-center items-center text-white mt-[5px]" style="font-size: 12px;"
@@ -726,15 +764,121 @@ function generateTasksHTML(day) {
         </div>
     </div>
     <div class="task-time flex flex-row justify-between items-end gap-[5px]">
-        <p class="task-start bg-${taskStart === 'en cours' ? '[#7296e3]' : (taskStart === 'terminé' ? '[#b9b9b9]' : 'transparent')} rounded-sm border border-solid text-${task.start.isBefore(now) ? 'white w-[80px]' : '[#7296e3]'} border-${taskStart === 'terminé' ? '[#b9b9b9]' : '[#7296e3]'} font-medium px-[5px] leading-[18px] mt-[4px] min-w-[48px] flex justify-center items-center whitespace-nowrap uppercase" style="font-size: 14px;">${taskStart}</p>
-        <p class="task-end bg-transparent rounded-sm border border-solid border-[#7296e3] text-[#7296e3] font-medium px-[5px] leading-[18px] mt-[4px] min-w-[48px] flex justify-center items-center whitespace-nowrap uppercase ${task.start.isBefore(now) ? 'hidden' : ''}" style="font-size: 14px;">${task.end.format('HH:mm')}</p>
+        <p class="task-start bg-${taskStart === 'en cours' ? '[#7296e3]' : (taskStart === 'terminé' ? '[#b9b9b9]' : 'transparent')} rounded-sm border border-solid text-${task.start.isBefore(now) ? 'white w-[80px]' : '[#7296e3]'} border-${taskStart === 'terminé' ? '[#b9b9b9]' : '[#7296e3]'} font-medium px-[5px] mt-[4px] min-w-[48px] flex justify-center items-center whitespace-nowrap uppercase" style="font-size: 14px;">${taskStart}</p>
+        <p class="task-end bg-transparent rounded-sm border border-solid border-[#7296e3] text-[#7296e3] font-medium px-[5px] mt-[4px] min-w-[48px] flex justify-center items-center whitespace-nowrap uppercase ${task.start.isBefore(now) ? 'hidden' : ''}" style="font-size: 14px;">${task.end.format('HH:mm')}</p>
     </div>
 </div>`
-        tasksWrapper.innerHTML += taskHTML;
-        index++;
-    }
-}
+                tasksWrapper.innerHTML += taskHTML;
+                index++;
+            }
+
+            // set scroll to top
+            tasksWrapper.scrollTop = 0;
+            window.scrollTo(0, 0);
+        }
+
+    </script>
+    <script>
+        /*100%
+        un bouton calendrier qui ouvre un calendrier ( qui vient du bas de l'écran ) avec le contenu suivant :
+    un scroll vertical avec pour chaque mois a partir du mois actuel : le nom du mois (centré), puis en dessous la première lettre de chaque jour de la semaine ( L M M J V S D ) puis en dessous les numéros des jours du mois ( ex : 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 ... ) sous forme de grille correspondant au jour de la semaine ( ne commence pas forcément par le lundi )
+    dans le coin en haut a droite, un bouton pour fermer le calendrier ou swipe vers le bas pour fermer le calendrier
+        */
+
+        const calendarWrapper = document.querySelector('#modal-from-bottom');
+        const calendarButton = document.querySelector('#calendar-button');
+        const calendar = document.createElement('div');
+        calendar.classList.add('flex', 'flex-col', 'items-strech', 'justify-start', 'w-full', 'bg-white', 'shadow-[0px_-50px_400px_400px_#cccccc99]', 'overflow-y-scroll', 'px-[15px]', 'pt-[75px]', 'pb-[25px]', 'h-full');
+
+        async function generateCalendar() {
+            calendar.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const month = now.clone().add(i, 'month').date(1);
+                const monthName = tradMonths[month.format('MMMM').toLowerCase()].complete;
+                const monthEl = document.createElement('div');
+                monthEl.classList.add('month', 'flex', 'flex-col', 'items-center', 'justify-start', 'w-full');
+                const monthHTML = `
+                <i class="fas fa-close absolute top-[15px] right-[15px] text-[#b9b9b9] text-[20px] cursor-pointer" onclick="calendarWrapper.classList.remove('open'); calendarWrapper.innerHTML=''"></i>
+                <p class="month-name font-bold text-black text-[22px] leading-[24px] mb-[24px]">${monthName}</p>
+    <div class="month-days flex flex-row items-center justify-center w-full">
+        <p class="day-letter font-medium text-black text-[16px] uppercase w-[100%] flex justify-center items-center aspect-square">L</p>
+        <p class="day-letter font-medium text-black text-[16px] uppercase w-[100%] flex justify-center items-center aspect-square">M</p>
+        <p class="day-letter font-medium text-black text-[16px] uppercase w-[100%] flex justify-center items-center aspect-square">M</p>
+        <p class="day-letter font-medium text-black text-[16px] uppercase w-[100%] flex justify-center items-center aspect-square">J</p>
+        <p class="day-letter font-medium text-black text-[16px] uppercase w-[100%] flex justify-center items-center aspect-square">V</p>
+        <p class="day-letter font-medium text-black text-[16px] uppercase w-[100%] flex justify-center items-center aspect-square">S</p>
+        <p class="day-letter font-medium text-black text-[16px] uppercase w-[100%] flex justify-center items-center aspect-square">D</p>
+    </div>
+    <div class="days-number grid grid-cols-7 w-full mb-[16px]">
+    </div>`
+                monthEl.innerHTML = monthHTML;
+                const listDaysInMonth = []
+
+                for (let j = 0; j < month.daysInMonth(); j++) {
+                    const day = month.clone().add(j, 'day');
+                    listDaysInMonth.push({
+                        day: day,
+                        dayNumber: day.format('DD'),
+                        weekType: day.week() % 2 === 0 ? 'even' : 'odd',
+                        weekDay: week[day.week() % 2 === 0 ? 'even' : 'odd'][day.format('dddd').toLowerCase()],
+                        dayName: day.format('dddd').toLowerCase(),
+                        order: day.day() === 0 ? 6 : day.day() - 1,
+                    });
+                }
+                let listDaysHTML = monthEl.querySelector('.days-number');
+                // create space before first day
+                for (let k = 0; k < listDaysInMonth[0].order; k++) {
+                    const dayHTML = `<p class="day-number flex justify-center items-center text-[#b9b9b9] text-[14px] uppercase w-[100%]"></p>`
+                    listDaysHTML.innerHTML += dayHTML;
+                }
+
+                for (const day in listDaysInMonth) {
+                    let textColor = 'black'
+                    
+                    if (listDaysInMonth[day].day.isBefore(now)) {
+                        textColor = '[#b9b9b9]'
+                    }
+                    if (listDaysInMonth[day].weekDay.length === 0) {
+                        textColor = '[#ddd] pointer-events-none'
+                    }
+                    if (listDaysInMonth[day].day.format('DD-MM-YYYY') === selectedDay) {
+                        textColor += ' bg-[' + (listDaysInMonth[day].weekType === 'even' ? '#f3d269' : '#f4a08d') + (textColor === 'black' ? '' : '66') + '] rounded-full'
+                    }
+                    if (listDaysInMonth[day].day.isSame(now, 'day')) {
+                        textColor += " after:bg-black after:rounded-full after:content-'' after:block after:h-[4px] after:w-[4px] after:mb-[-5px]"
+                    }
+                    const dayHTML = `<p class="day-number w-[100%] flex flex-col justify-center items-center aspect-square items-center text-${textColor} font-medium text-[16px] uppercase" data-day="${listDaysInMonth[day].day.format('DD-MM-YYYY')}">${listDaysInMonth[day].dayNumber}</p>`
+                    listDaysHTML.innerHTML += dayHTML;
+                }
+
+                calendar.appendChild(monthEl);
+            }
+        }
+
+        async function openCalendar() {
+            await generateCalendar();
+            calendarWrapper.appendChild(calendar);
+            calendarWrapper.classList.add('open');
+
+            // event listeners for days
+            const daysElements = document.querySelectorAll('.day-number');
+            for(const day of daysElements) {
+                day.addEventListener('click', function() {
+                    if(this.dataset.day) {
+                        selectedDay = this.dataset.day;
+                        const day = selectedDay === now.format('DD-MM-YYYY') ? now : moment(selectedDay, 'DD-MM-YYYY');
+                        generateDays(day).then((days) => {
+                            generateDaysHTML(days);
+                        });
+                        calendarWrapper.classList.remove('open');
+                        calendarWrapper.innerHTML = '';
+                    }
+                })
+
+            }
+        }
 
     </script>
 </body>
+
 </html>
