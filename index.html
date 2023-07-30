@@ -628,7 +628,7 @@ un système de mot de passe est mis en place pour accéder au planning
                 firstDay.add(1, 'day');
                 firstDay.hour(0);
             }
-            const firstWeekType = firstDay.week() % 2 === 0 ? 'even' : 'odd';
+            let firstWeekType = firstDay.week() % 2 === 0 ? 'even' : 'odd';
             // si on est dimanche, on passe au lundi
             if (firstDay.day() === 0) {
                 firstWeekType = firstWeekType === 'even' ? 'odd' : 'even';
