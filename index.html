@@ -979,7 +979,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                 tasks.querySelector('.day-hover-tasks').style.transition = 'opacity .1s ease-in-out';
                 tasks.querySelector('.day-hover-tasks').style.opacity = '1';
             }
-            tasks.style.transform = `translateX(${tasksOffset}px)`;
+            tasks.style.transform = `translateX(${tasksOffset*1.2}px)`;
         })
 
         tasks.addEventListener('touchend', async function (e) {
@@ -1013,7 +1013,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
             }
             // transition: transform .3s ease-in-out;
             tasks.style.transition = 'transform .2s ease-in-out';
-            tasks.style.transform = `translateX(${tasksOffset}px)`;
+            tasks.style.transform = `translateX(${tasksOffset*1.2}px)`;
             setTimeout(async () => {
                 // changer de jour et de tâches
                 // regenerer les days si le jour demandé est avant le premier jour affiché ou après le dernier jour affiché (generateDays)
