@@ -20,6 +20,10 @@
             display: none;
         }
 
+        html {
+            height: 100%;
+        }
+
         * {
             -ms-overflow-style: none;
             /* IE and Edge */
@@ -37,7 +41,7 @@
         }
 
         .day-hover-tasks {
-            min-height: 100%;
+            min-height: calc(100% - 115px);
         }
 
         .task.current {
@@ -783,7 +787,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                 index++;
             }
 
-            tasks.innerHTML += `<div class="day-hover-tasks absolute w-screen pt-[${(document.body.offsetHeight - document.querySelector('nav').offsetHeight - 88) / 2}px] flex justify-start items-center z-[-1] bg-[#f7f7f7] bg-opacity-50 opacity-0 backdrop-filter backdrop-blur-[10px] pointer-events-none flex-col">
+            tasks.innerHTML += `<div class="day-hover-tasks absolute w-screen flex justify-center items-center z-[-1] bg-[#f7f7f7] bg-opacity-50 opacity-0 backdrop-filter backdrop-blur-[10px] pointer-events-none flex-col">
                 <p class="day-name uppercase font-bold leading-[26px] text-[#00000090]" style="font-size: 16px;"
                 >${tradDays[moment(selectedDay, 'DD-MM-YYYY').format('dddd').toLowerCase()].complete}</p>
                 <p class="day-number font-bold leading-[36px]" style="font-size: 32px;"
@@ -1012,7 +1016,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                     tasks.querySelector('.day-hover-tasks').style.zIndex = ''
                     tasks.style.transition = '';
                     tasks.style.transform = '';
-                }, 300);
+                }, 200);
                 return;
             }
             // transition: transform .3s ease-in-out;
@@ -1116,8 +1120,8 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                     document.querySelector('#next-or-prev-day').style.zIndex = '-1';
                     tasks.querySelector('.day-hover-tasks').style.zIndex = '';
                     document.querySelector('#next-or-prev-day').style.opacity = '1';
-                }, 150);
-            }, 300);
+                }, 100);
+            }, 200);
         })
     </script>
 </body>
