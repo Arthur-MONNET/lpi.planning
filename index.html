@@ -976,7 +976,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                 tasks.style.overflow = 'hidden';
                 document.querySelector('main').style.overflow = 'hidden';
                 // ajout du numéro du nom du jour + numéro du jour + nom du mois ( meme style que les elements ".day" ) au milieu de la balise #tasks ( en position absolute ) avec un z-index de 1 ( pour être au dessus des tâches ) avec un fond blanc et une opacité de 0.5 et un filtre de flou gaussien de 10px
-                tasks.querySelector('.day-hover-tasks').style.transition = 'opacity .15s ease-in-out';
+                tasks.querySelector('.day-hover-tasks').style.transition = 'opacity .1s ease-in-out';
                 tasks.querySelector('.day-hover-tasks').style.opacity = '1';
             }
             tasks.style.transform = `translateX(${tasksOffset}px)`;
@@ -1100,7 +1100,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                 if(dayElement) daysWrapper.scrollLeft = dayElement.offsetLeft - (daysWrapper.offsetWidth / 2) + (dayElement.offsetWidth / 2);
 
 
-                document.querySelector('#next-or-prev-day').style.transition = 'opacity .15s ease-in-out';
+                document.querySelector('#next-or-prev-day').style.transition = 'opacity .05s ease-in-out';
                 document.querySelector('#next-or-prev-day').style.zIndex = '10';
                 document.querySelector('#next-or-prev-day').style.opacity = '0';
                 tasks.querySelector('.day-hover-tasks').style.transition = '';
@@ -1112,7 +1112,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                     document.querySelector('#next-or-prev-day').style.zIndex = '-1';
                     tasks.querySelector('.day-hover-tasks').style.zIndex = '';
                     document.querySelector('#next-or-prev-day').style.opacity = '1';
-                }, 200);
+                }, 150);
             }, 300);
         })
     </script>
