@@ -36,6 +36,10 @@
             height: 100%;
         }
 
+        .day-hover-tasks {
+            min-height: 100%;
+        }
+
         .task.current {
             background-color: #7296e329;
         }
@@ -779,7 +783,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                 index++;
             }
 
-            tasks.innerHTML += `<div class="day-hover-tasks absolute min-h-[${tasks.offsetHeight - 115}px] w-screen pt-[${(document.body.offsetHeight - document.querySelector('nav').offsetHeight - 88) / 2}px] flex justify-start items-center z-[-1] bg-[#f7f7f7] bg-opacity-50 opacity-0 backdrop-filter backdrop-blur-[10px] pointer-events-none flex-col">
+            tasks.innerHTML += `<div class="day-hover-tasks absolute w-screen pt-[${(document.body.offsetHeight - document.querySelector('nav').offsetHeight - 88) / 2}px] flex justify-start items-center z-[-1] bg-[#f7f7f7] bg-opacity-50 opacity-0 backdrop-filter backdrop-blur-[10px] pointer-events-none flex-col">
                 <p class="day-name uppercase font-bold leading-[26px] text-[#00000090]" style="font-size: 16px;"
                 >${tradDays[moment(selectedDay, 'DD-MM-YYYY').format('dddd').toLowerCase()].complete}</p>
                 <p class="day-number font-bold leading-[36px]" style="font-size: 32px;"
