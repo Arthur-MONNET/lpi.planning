@@ -986,11 +986,11 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
             tasksOnBlur = false;
             tasks.style.overflow = '';
             document.querySelector('main').style.overflow = '';
-            if (tasksOffset > 15) {
+            if (tasksOffset > 0) {
                 // aller à la tâche precedente
                 console.log('aller à la tâche precedente')
                 tasksOffset = tasks.offsetWidth;
-            } else if (tasksOffset < -15) {
+            } else if (tasksOffset < 0) {
                 // aller à la tâche suivante
                 tasksOffset = -tasks.offsetWidth;
                 console.log('aller à la tâche suivante')
