@@ -48,6 +48,25 @@
             background-color: #7296e329;
         }
 
+        .task * {
+            pointer-events: none;
+            -webkit-user-select: none;
+            /* Safari */
+            -ms-user-select: none;
+            /* IE 10 and IE 11 */
+            user-select: none;
+            /* Standard syntax */
+        }
+
+        .day-hover-tasks * {
+            -webkit-user-select: none;
+            /* Safari */
+            -ms-user-select: none;
+            /* IE 10 and IE 11 */
+            user-select: none;
+            /* Standard syntax */
+        }
+
         .task.finished .task-text {
             opacity: 0.3;
         }
@@ -769,7 +788,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                     taskStart = 'terminé';
                 }
                 const taskHTML = `
-<div class="task ${task.start.isBefore(now) && task.end.isAfter(now) ? 'current' : ''} ${task.end.isBefore(now) ? 'finished' : ''} h-[80px] min-h-[80px] w-full flex justify-between items-start px-[15px] pt-[10px]">
+<div class="task ${task.start.isBefore(now) && task.end.isAfter(now) ? 'current ' : ''} ${task.end.isBefore(now) ? 'finished ' : ''}h-[80px] min-h-[80px] w-full flex justify-between items-start px-[15px] pt-[10px]">
     <div class="task-content flex items-start gap-[10px] w-full">
     <p class="task-number bg-${taskStart === 'en cours' ? '[#7296e3]' : '[#b9b9b9]'} rounded-full min-w-[20px] min-h-[20px] flex justify-center items-center text-white mt-[5px]" style="font-size: 12px;"
     >${textIndex}</p>
@@ -779,8 +798,8 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
         </div>
     </div>
     <div class="task-time flex flex-row justify-between items-end gap-[5px]">
-        <p class="task-start bg-${taskStart === 'en cours' ? '[#7296e3]' : (taskStart === 'terminé' ? '[#b9b9b9]' : 'transparent')} rounded-sm border border-solid text-${task.start.isBefore(now) ? 'white w-[80px]' : '[#7296e3]'} border-${taskStart === 'terminé' ? '[#b9b9b9]' : '[#7296e3]'} font-medium px-[5px] mt-[4px] min-w-[48px] flex justify-center items-center whitespace-nowrap uppercase" style="font-size: 14px;">${taskStart}</p>
-        <p class="task-end bg-transparent rounded-sm border border-solid border-[#7296e3] text-[#7296e3] font-medium px-[5px] mt-[4px] min-w-[48px] flex justify-center items-center whitespace-nowrap uppercase ${task.start.isBefore(now) ? 'hidden' : ''}" style="font-size: 14px;">${task.end.format('HH:mm')}</p>
+        <p class="task-start bg-${taskStart === 'en cours' ? '[#7296e3]' : (taskStart === 'terminé' ? '[#b9b9b9]' : 'transparent')} rounded-sm h-[21px] border border-solid text-${task.start.isBefore(now) ? 'white min-w-[0]' : '[#7296e3] min-w-[48px]'} border-${taskStart === 'terminé' ? '[#b9b9b9]' : '[#7296e3]'} font-medium px-[5px] mt-[4px] flex justify-center items-center whitespace-nowrap uppercase" style="font-size: 14px;">${taskStart}</p>
+        <p class="task-end bg-transparent rounded-sm border border-solid min-w-[48px] border-[#7296e3] text-[#7296e3] font-medium px-[5px] mt-[4px] flex justify-center items-center whitespace-nowrap uppercase ${task.start.isBefore(now) ? 'hidden' : ''}" style="font-size: 14px;">${task.end.format('HH:mm')}</p>
     </div>
 </div>`
                 tasksWrapper.innerHTML += taskHTML;
@@ -799,6 +818,89 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
             // set scroll to top
             tasksWrapper.scrollTop = 0;
             window.scrollTo(0, 0);
+
+            // event listeners
+
+            /*
+            event clique sur une tâche
+            si la tache est en cours, on change le texte du bouton de "en cours" à "en cours jusqu'à hh:mm" ( avec hh:mm = heure de fin de la tâche )
+            */
+            const tasksElements = document.querySelectorAll('.task');
+            let taskCounter = 0;
+            for (const taskEl of tasksElements) {
+                const task = day.tasks[taskCounter];
+                taskCounter++;
+                // long press sur une tâche
+                let timer
+                const touchDuration = 300 //ms
+
+                taskEl.addEventListener('touchstart', function (e) {
+                    timer = setTimeout(() => {
+                        // long press
+                        timer = null
+                        if (this.classList.contains('current') || this.classList.contains('finished')) {
+                            // task in progress
+                            console.log('tâche en cours ou terminée')
+                            const taskTimerText = this.querySelector('.task-start');
+                            // animation de text qui s'écrit ( "en cours jusqu'à hh:mm" letre par lettre )
+                            const taskTimerTextContent = taskTimerText.textContent;
+                            const currentText = 'en cours';
+                            const finishedText = 'terminé';
+                            const finalText = `${task.start.format('HH:mm')} - ${task.end.format('HH:mm')}`;
+                            const taskTimerTextAnimationClear = setInterval(() => {
+                                if (taskTimerText.textContent.length > 0) {
+                                    taskTimerText.textContent = taskTimerText.textContent.slice(0, -1);
+                                } else {
+                                    clearInterval(taskTimerTextAnimationClear);
+                                    const taskTimerTextAnimation = setInterval(() => {
+                                        if (taskTimerText.textContent.length < finalText.length) {
+                                            taskTimerText.textContent += finalText[taskTimerText.textContent.length];
+                                        } else {
+                                            clearInterval(taskTimerTextAnimation);
+                                            // on attend 2 secondes avant de remettre le texte à "en cours"
+                                            setTimeout(() => {
+                                                const taskTimerTextAnimationClear2 = setInterval(() => {
+                                                    if (taskTimerText.textContent.length > 0) {
+                                                        taskTimerText.textContent = taskTimerText.textContent.slice(0, -1);
+                                                    } else {
+                                                        clearInterval(taskTimerTextAnimationClear2);
+                                                        const taskTimerTextAnimation2 = setInterval(() => {
+                                                            if (taskEl.classList.contains('current')) {
+                                                                if (taskTimerText.textContent.length < currentText.length) {
+                                                                    taskTimerText.textContent += currentText[taskTimerText.textContent.length];
+                                                                } else {
+                                                                    clearInterval(taskTimerTextAnimation2);
+                                                                }
+                                                            } else if (taskEl.classList.contains('finished')) {
+                                                                if (taskTimerText.textContent.length < finishedText.length) {
+                                                                    taskTimerText.textContent += finishedText[taskTimerText.textContent.length];
+                                                                } else {
+                                                                    clearInterval(taskTimerTextAnimation2);
+                                                                }
+                                                            }
+                                                        }, 20)
+                                                    }
+                                                }, 20)
+                                            }, 2000)
+                                        }
+                                    }, 20)
+                                }
+                            }, 20)
+                        } else {
+                            // tâche à venir
+                            console.log('tâche à venir')
+                        }
+                    }, touchDuration)
+
+                })
+
+                taskEl.addEventListener('touchend', function () {
+                    clearTimeout(timer)
+                })
+                taskEl.addEventListener('touchmove', function () {
+                    clearTimeout(timer)
+                })
+            }
         }
 
     </script>
@@ -987,7 +1089,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                 tasks.querySelector('.day-hover-tasks').style.transition = 'opacity .1s ease-in-out';
                 tasks.querySelector('.day-hover-tasks').style.opacity = '1';
             }
-            tasks.style.transform = `translateX(${tasksOffset*1.2}px)`;
+            tasks.style.transform = `translateX(${tasksOffset * 1.2}px)`;
         })
 
         tasks.addEventListener('touchend', async function (e) {
@@ -996,19 +1098,16 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
             document.querySelector('main').style.overflow = '';
             if (tasksOffset > 0) {
                 // aller à la tâche precedente
-                console.log('aller à la tâche precedente')
                 tasksOffset = tasks.offsetWidth;
             } else if (tasksOffset < 0) {
                 // aller à la tâche suivante
                 tasksOffset = -tasks.offsetWidth;
-                console.log('aller à la tâche suivante')
             } else {
-                // rester sur la tâche actuelle
-                console.log('rester sur la tâche actuelle', tasksOffset)
+                // ne pas bouger
                 tasksOffset = 0;
                 tasks.querySelector('.day-hover-tasks').style.opacity = '0';
                 tasks.style.transform = `translateX(0px)`;
-                
+
                 document.querySelector('#next-or-prev-day>.day-name').innerText = ''
                 document.querySelector('#next-or-prev-day>.day-number').innerText = ''
                 document.querySelector('#next-or-prev-day>.day-month').innerText = ''
@@ -1021,7 +1120,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
             }
             // transition: transform .3s ease-in-out;
             tasks.style.transition = 'transform .2s ease-in-out';
-            tasks.style.transform = `translateX(${tasksOffset*1.2}px)`;
+            tasks.style.transform = `translateX(${tasksOffset * 1.2}px)`;
             setTimeout(async () => {
                 // changer de jour et de tâches
                 // regenerer les days si le jour demandé est avant le premier jour affiché ou après le dernier jour affiché (generateDays)
@@ -1045,7 +1144,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                 } else if (tasksOffset < 0) {
                     // aller au jour suivante
                     selectedDay = moment(selectedDay, 'DD-MM-YYYY').add(1, 'day').format('DD-MM-YYYY');
-                    
+
                     let selectedDayWeekType = moment(selectedDay, 'DD-MM-YYYY').week() % 2 === 0 ? 'even' : 'odd';
                     if (moment(selectedDay, 'DD-MM-YYYY').day() === 0) {
                         selectedDayWeekType = selectedDayWeekType === 'even' ? 'odd' : 'even';
@@ -1105,7 +1204,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                 //on scroll jusqu'au jour sélectionné
                 const dayElement = document.querySelector('.day.selected');
                 console.info(dayElement, dayElement.offsetLeft - (daysWrapper.offsetWidth / 2) + (dayElement.offsetWidth / 2))
-                if(dayElement) daysWrapper.scrollLeft = dayElement.offsetLeft - (daysWrapper.offsetWidth / 2) + (dayElement.offsetWidth / 2);
+                if (dayElement) daysWrapper.scrollLeft = dayElement.offsetLeft - (daysWrapper.offsetWidth / 2) + (dayElement.offsetWidth / 2);
 
 
                 document.querySelector('#next-or-prev-day').style.transition = 'opacity .05s ease-in-out';
