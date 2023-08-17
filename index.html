@@ -31,6 +31,11 @@
             opacity: 1;
         }
 
+        #tasks {
+            min-height: 100%;
+            height: 100%;
+        }
+
         .task.current {
             background-color: #7296e329;
         }
@@ -56,10 +61,10 @@
     </style>
 </head>
 
-<body class="flex flex-col items-strech justify-start w-screen bg-[#f7f7f7]">
+<body class="flex flex-col items-strech justify-start w-screen h-full bg-[#f7f7f7] overflow-hidden">
     <nav
         class="flex flex-row justify-between items-center w-full border-bottom-[#090a0b0d] border border-solid bg-[#f7f7f7] z-30 fixed top-0 left-0 h-[115px] min-h-[115px]">
-        <div id="days" class="flex flex-row overflow-x-scroll gap-[7px] py-[20px] px-[15px]">
+        <div id="days" class="flex flex-row overflow-x-scroll gap-[7px] py-[20px] px-[15px] scroll-smooth">
         </div>
         <div id="download"
             class="bg-white border-white border border-solid rounded p-1 mr-[15px] h-[72px] min-h-[72px] w-[56px] min-w-[56px] flex flex-col justify-center items-center shadow-[-5px_0px_10px_10px_#F7F7F799]">
@@ -67,10 +72,15 @@
                     style="font-size: 22px;"></i></a>
         </div>
     </nav>
-    <main>
-        <div id="tasks" class="flex flex-col items-strech justify-start w-full pt-[115px]">
+    <main class="w-screen h-screen overflow-y-scroll">
+        <div id="tasks" class="flex flex-col items-strech justify-start pt-[115px] bg-[#f7f7f7]">
         </div>
-
+        <div id="next-or-prev-day"
+            class="flex flex-col items-center justify-center min-h-screen w-full pt-[115px] backdrop-filter backdrop-blur-[10px] bg-[#f7f7f7] absolute top-0 z-[-1] pointer-events-none">
+            <p class="day-name uppercase font-bold leading-[26px] text-[#00000090]" style="font-size: 16px;"></p>
+            <p class="day-number font-bold leading-[36px]" style="font-size: 32px;"></p>
+            <p class="day-month uppercase font-bold leading-[26px] text-[#00000090]" style="font-size: 16px;"></p>
+        </div>
     </main>
     <div id="modal-from-bottom">
 
@@ -107,6 +117,7 @@ un système de mot de passe est mis en place pour accéder au planning
 
         const now = moment();
         let selectedDay = now.format('DD-MM-YYYY');
+        let days = [];
 
         const tradDays = {
             monday: {
@@ -622,7 +633,7 @@ un système de mot de passe est mis en place pour accéder au planning
         })
 
         async function generateDays(firstDay) {
-            let days = [];
+            days = [];
             // si on a dépassé 21h, on passe au jour suivant
             if (now.hour() >= 21) {
                 firstDay.add(1, 'day');
@@ -633,11 +644,7 @@ un système de mot de passe est mis en place pour accéder au planning
             if (firstDay.day() === 0) {
                 firstWeekType = firstWeekType === 'even' ? 'odd' : 'even';
             }
-            const firstDayName = firstDay.format('dddd').toLowerCase();
-            if (week[firstWeekType][firstDayName].length === 0) {
-                firstDay.add(1, 'day');
-                firstDay.hour(0);
-            }
+            let firstDayName = firstDay.format('dddd').toLowerCase();
 
             for (let i = 0; i < 7; i++) {
                 const day = firstDay.clone().add(i, 'day');
@@ -772,6 +779,15 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                 index++;
             }
 
+            tasks.innerHTML += `<div class="day-hover-tasks absolute min-h-[${tasks.offsetHeight - 115}px] w-screen pt-[${(document.body.offsetHeight - document.querySelector('nav').offsetHeight - 88) / 2}px] flex justify-start items-center z-[-1] bg-[#f7f7f7] bg-opacity-50 opacity-0 backdrop-filter backdrop-blur-[10px] pointer-events-none flex-col">
+                <p class="day-name uppercase font-bold leading-[26px] text-[#00000090]" style="font-size: 16px;"
+                >${tradDays[moment(selectedDay, 'DD-MM-YYYY').format('dddd').toLowerCase()].complete}</p>
+                <p class="day-number font-bold leading-[36px]" style="font-size: 32px;"
+                >${moment(selectedDay, 'DD-MM-YYYY').format('DD')}</p>
+                <p class="day-month uppercase font-bold leading-[26px] text-[#00000090]" style="font-size: 16px;"
+                >${tradMonths[moment(selectedDay, 'DD-MM-YYYY').format('MMMM').toLowerCase()].complete}</p>
+                </div>`
+
             // set scroll to top
             tasksWrapper.scrollTop = 0;
             window.scrollTo(0, 0);
@@ -816,11 +832,15 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
 
                 for (let j = 0; j < month.daysInMonth(); j++) {
                     const day = month.clone().add(j, 'day');
+                    let weekType = day.week() % 2 === 0 ? 'even' : 'odd';
+                    if (day.day() === 0) {
+                        weekType = weekType === 'even' ? 'odd' : 'even';
+                    }
                     listDaysInMonth.push({
                         day: day,
                         dayNumber: day.format('DD'),
-                        weekType: day.week() % 2 === 0 ? 'even' : 'odd',
-                        weekDay: week[day.week() % 2 === 0 ? 'even' : 'odd'][day.format('dddd').toLowerCase()],
+                        weekType: weekType,
+                        weekDay: week[weekType][day.format('dddd').toLowerCase()],
                         dayName: day.format('dddd').toLowerCase(),
                         order: day.day() === 0 ? 6 : day.day() - 1,
                     });
@@ -834,7 +854,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
 
                 for (const day in listDaysInMonth) {
                     let textColor = 'black'
-                    
+
                     if (listDaysInMonth[day].day.isBefore(now)) {
                         textColor = '[#b9b9b9]'
                     }
@@ -862,9 +882,9 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
 
             // event listeners for days
             const daysElements = document.querySelectorAll('.day-number');
-            for(const day of daysElements) {
-                day.addEventListener('click', function() {
-                    if(this.dataset.day) {
+            for (const day of daysElements) {
+                day.addEventListener('click', function () {
+                    if (this.dataset.day) {
                         selectedDay = this.dataset.day;
                         const day = selectedDay === now.format('DD-MM-YYYY') ? now : moment(selectedDay, 'DD-MM-YYYY');
                         generateDays(day).then((days) => {
@@ -878,6 +898,222 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
             }
         }
 
+    </script>
+    <script>
+        /* 
+        faire glisser le doigt de gauche à droite pour changer de jour
+        event listener sur #tasks pour glisser de gauche à droite, et changer de jour
+        ajout d'une animation de transition pour le changement de jour
+        */
+        const tasks = document.querySelector('#tasks');
+        let tasksOffset = 0;
+        let tasksOffsetMin = 50;
+        let tasksOffsetStart = 0;
+        let tasksOffsetEnd = 0;
+        let tasksOffsetDiff = 0;
+        let tasksOnBlur = false;
+
+        tasks.addEventListener('touchstart', function (e) {
+            tasksOffsetStart = e.touches[0].clientX;
+        })
+
+        tasks.addEventListener('touchmove', function (e) {
+            tasksOffsetEnd = e.touches[0].clientX;
+            tasksOffsetDiff = tasksOffsetEnd - tasksOffsetStart;
+            // si tasksOffsetDiff est < tasksOffsetMin && > -tasksOffsetMin, alors on ne bouge pas
+            // sinon on bouge de tasksOffsetDiff - tasksOffsetMin si tasksOffsetDiff > 0 et tasksOffsetDiff + tasksOffsetMin si tasksOffsetDiff < 0
+            if (tasksOffsetDiff > tasksOffsetMin) {
+                tasksOffset = tasksOffsetDiff - tasksOffsetMin;
+                let previousDay = moment(selectedDay, 'DD-MM-YYYY').add(-1, 'day');
+                let previousDayWeekType = previousDay.week() % 2 === 0 ? 'even' : 'odd';
+                if (previousDay.day() === 0) {
+                    previousDayWeekType = previousDayWeekType === 'even' ? 'odd' : 'even';
+                }
+                // si previousDay est un jour sans tâches, previousDay = previousDay - 1
+                while (week[previousDayWeekType][previousDay.format('dddd').toLowerCase()].length === 0) {
+                    previousDay = previousDay.add(-1, 'day');
+                    previousDayWeekType = previousDay.week() % 2 === 0 ? 'even' : 'odd';
+                    if (previousDay.day() === 0) {
+                        previousDayWeekType = previousDayWeekType === 'even' ? 'odd' : 'even';
+                    }
+                }
+                document.querySelector('#next-or-prev-day>.day-name').innerText = tradDays[previousDay.format('dddd').toLowerCase()].complete
+                document.querySelector('#next-or-prev-day>.day-number').innerText = previousDay.format('DD')
+                document.querySelector('#next-or-prev-day>.day-month').innerText = tradMonths[previousDay.format('MMMM').toLowerCase()].complete
+                tasks.querySelector('.day-hover-tasks').style.zIndex = '10';
+                tasksOnBlur = true;
+            } else if (tasksOffsetDiff < -tasksOffsetMin) {
+                tasksOffset = tasksOffsetDiff + tasksOffsetMin;
+                let nextDay = moment(selectedDay, 'DD-MM-YYYY').add(1, 'day');
+                let nextDayWeekType = nextDay.week() % 2 === 0 ? 'even' : 'odd';
+                if (nextDay.day() === 0) {
+                    nextDayWeekType = nextDayWeekType === 'even' ? 'odd' : 'even';
+                }
+                // si nextDay est un jour sans tâches, nextDay = nextDay + 1
+                while (week[nextDay.week() % 2 === 0 ? 'even' : 'odd'][nextDay.format('dddd').toLowerCase()].length === 0) {
+                    nextDay = nextDay.add(1, 'day');
+                    nextDayWeekType = nextDay.week() % 2 === 0 ? 'even' : 'odd';
+                    if (nextDay.day() === 0) {
+                        nextDayWeekType = nextDayWeekType === 'even' ? 'odd' : 'even';
+                    }
+                }
+                document.querySelector('#next-or-prev-day>.day-name').innerText = tradDays[nextDay.format('dddd').toLowerCase()].complete
+                document.querySelector('#next-or-prev-day>.day-number').innerText = nextDay.format('DD')
+                document.querySelector('#next-or-prev-day>.day-month').innerText = tradMonths[nextDay.format('MMMM').toLowerCase()].complete
+                tasks.querySelector('.day-hover-tasks').style.zIndex = '10';
+                tasksOnBlur = true;
+            } else {
+                document.querySelector('#next-or-prev-day>.day-name').innerText = ''
+                document.querySelector('#next-or-prev-day>.day-number').innerText = ''
+                document.querySelector('#next-or-prev-day>.day-month').innerText = ''
+                // reactiver le scroll de la page ( delete overflow: hidden )
+                tasks.style.overflow = '';
+                document.querySelector('main').style.overflow = '';
+                tasksOffset = 0;
+            }
+            if (tasksOnBlur) {
+                // désactiver le scroll de la page ( add overflow: hidden )
+                tasks.style.overflow = 'hidden';
+                document.querySelector('main').style.overflow = 'hidden';
+                // ajout du numéro du nom du jour + numéro du jour + nom du mois ( meme style que les elements ".day" ) au milieu de la balise #tasks ( en position absolute ) avec un z-index de 1 ( pour être au dessus des tâches ) avec un fond blanc et une opacité de 0.5 et un filtre de flou gaussien de 10px
+                tasks.querySelector('.day-hover-tasks').style.transition = 'opacity .15s ease-in-out';
+                tasks.querySelector('.day-hover-tasks').style.opacity = '1';
+            }
+            tasks.style.transform = `translateX(${tasksOffset}px)`;
+        })
+
+        tasks.addEventListener('touchend', async function (e) {
+            tasksOnBlur = false;
+            tasks.style.overflow = '';
+            document.querySelector('main').style.overflow = '';
+            if (tasksOffset > tasks.offsetWidth / 3) {
+                // aller à la tâche precedente
+                console.log('aller à la tâche precedente')
+                tasksOffset = tasks.offsetWidth;
+            } else if (tasksOffset < -tasks.offsetWidth / 3) {
+                // aller à la tâche suivante
+                tasksOffset = -tasks.offsetWidth;
+                console.log('aller à la tâche suivante')
+            } else {
+                // rester sur la tâche actuelle
+                tasksOffset = 0;
+                tasks.querySelector('.day-hover-tasks').style.opacity = '0';
+                tasks.style.transform = `translateX(0px)`;
+                console.log('rester sur la tâche actuelle')
+                document.querySelector('#next-or-prev-day>.day-name').innerText = ''
+                document.querySelector('#next-or-prev-day>.day-number').innerText = ''
+                document.querySelector('#next-or-prev-day>.day-month').innerText = ''
+                setTimeout(() => {
+                    tasks.querySelector('.day-hover-tasks').style.zIndex = ''
+                    tasks.style.transition = '';
+                    tasks.style.transform = '';
+                }, 300);
+                return;
+            }
+            // transition: transform .3s ease-in-out;
+            tasks.style.transition = 'transform .2s ease-in-out';
+            tasks.style.transform = `translateX(${tasksOffset}px)`;
+            setTimeout(async () => {
+                // changer de jour et de tâches
+                // regenerer les days si le jour demandé est avant le premier jour affiché ou après le dernier jour affiché (generateDays)
+
+                // changer le jour sélectionné
+                if (tasksOffset > 0) {
+                    // aller au jour précédente
+                    selectedDay = moment(selectedDay, 'DD-MM-YYYY').add(-1, 'day').format('DD-MM-YYYY');
+                    let selectedDayWeekType = moment(selectedDay, 'DD-MM-YYYY').week() % 2 === 0 ? 'even' : 'odd';
+                    if (moment(selectedDay, 'DD-MM-YYYY').day() === 0) {
+                        selectedDayWeekType = selectedDayWeekType === 'even' ? 'odd' : 'even';
+                    }
+                    // si selectedDay est un jour sans tâches, on passe au jour précédent
+                    while (week[selectedDayWeekType][moment(selectedDay, 'DD-MM-YYYY').format('dddd').toLowerCase()].length === 0) {
+                        selectedDay = moment(selectedDay, 'DD-MM-YYYY').add(-1, 'day').format('DD-MM-YYYY');
+                        selectedDayWeekType = moment(selectedDay, 'DD-MM-YYYY').week() % 2 === 0 ? 'even' : 'odd';
+                        if (moment(selectedDay, 'DD-MM-YYYY').day() === 0) {
+                            selectedDayWeekType = selectedDayWeekType === 'even' ? 'odd' : 'even';
+                        }
+                    }
+                } else if (tasksOffset < 0) {
+                    // aller au jour suivante
+                    selectedDay = moment(selectedDay, 'DD-MM-YYYY').add(1, 'day').format('DD-MM-YYYY');
+                    
+                    let selectedDayWeekType = moment(selectedDay, 'DD-MM-YYYY').week() % 2 === 0 ? 'even' : 'odd';
+                    if (moment(selectedDay, 'DD-MM-YYYY').day() === 0) {
+                        selectedDayWeekType = selectedDayWeekType === 'even' ? 'odd' : 'even';
+                    }
+                    console.log(selectedDay, week[selectedDayWeekType][moment(selectedDay, 'DD-MM-YYYY').format('dddd').toLowerCase()].length === 0)
+                    while (week[selectedDayWeekType][moment(selectedDay, 'DD-MM-YYYY').format('dddd').toLowerCase()].length === 0) {
+                        selectedDay = moment(selectedDay, 'DD-MM-YYYY').add(1, 'day').format('DD-MM-YYYY');
+                        selectedDayWeekType = moment(selectedDay, 'DD-MM-YYYY').week() % 2 === 0 ? 'even' : 'odd';
+                        if (moment(selectedDay, 'DD-MM-YYYY').day() === 0) {
+                            selectedDayWeekType = selectedDayWeekType === 'even' ? 'odd' : 'even';
+                        }
+                        console.log(selectedDay, week[selectedDayWeekType][moment(selectedDay, 'DD-MM-YYYY').format('dddd').toLowerCase()].length === 0)
+                    }
+                }
+
+                //si selectedDay est dans les jours affichés, on ne regenere pas les jours
+                let daysEl = document.querySelectorAll('.day');
+                let daysDisplayed = [];
+                for (const day of daysEl) {
+                    daysDisplayed.push(day.dataset.day);
+                }
+                if (daysDisplayed.includes(selectedDay)) {
+                    // on change le jour sélectionné
+                    for (const day of daysEl) {
+                        day.classList.remove('selected');
+                        if (day.dataset.day === selectedDay) {
+                            day.classList.add('selected');
+                        }
+                    }
+                    // on change les tâches
+                    const day = days.find(day => day.moment.format('DD-MM-YYYY') === selectedDay);
+                    generateTasksHTML(day);
+                } else {
+                    // on regenere les jours à partir du jour sélectionné si selectedDay est avant le premier jour affiché
+                    // sinon on regenere les jours à partir du jour sélectionné - 6
+                    let day = moment(selectedDay, 'DD-MM-YYYY');
+                    if (day.isBefore(moment(daysEl[0].dataset.day, 'DD-MM-YYYY'))) {
+                        await generateDays(day)
+                        generateDaysHTML(days);
+                    } else {
+                        day = day.add(-6, 'day');
+                        await generateDays(day)
+                        generateDaysHTML(days)
+                        daysEl = document.querySelectorAll('.day');
+                        selectedDay = day.add(6, 'day').format('DD-MM-YYYY');
+                        for (const day of daysEl) {
+                            day.classList.remove('selected');
+                            if (day.dataset.day === selectedDay) {
+                                day.classList.add('selected');
+                            }
+                        }
+                        // on change les tâches
+                        generateTasksHTML(days.find(day => day.moment.format('DD-MM-YYYY') === selectedDay));
+                    }
+                }
+
+                //on scroll jusqu'au jour sélectionné
+                const dayElement = document.querySelector('.day.selected');
+                console.info(dayElement, dayElement.offsetLeft - (daysWrapper.offsetWidth / 2) + (dayElement.offsetWidth / 2))
+                if(dayElement) daysWrapper.scrollLeft = dayElement.offsetLeft - (daysWrapper.offsetWidth / 2) + (dayElement.offsetWidth / 2);
+
+
+                document.querySelector('#next-or-prev-day').style.transition = 'opacity .15s ease-in-out';
+                document.querySelector('#next-or-prev-day').style.zIndex = '10';
+                document.querySelector('#next-or-prev-day').style.opacity = '0';
+                tasks.querySelector('.day-hover-tasks').style.transition = '';
+                tasks.querySelector('.day-hover-tasks').style.opacity = '0';
+                tasks.style.transition = '';
+                tasks.style.transform = '';
+                tasksOffset = 0;
+                setTimeout(() => {
+                    document.querySelector('#next-or-prev-day').style.zIndex = '-1';
+                    tasks.querySelector('.day-hover-tasks').style.zIndex = '';
+                    document.querySelector('#next-or-prev-day').style.opacity = '1';
+                }, 200);
+            }, 300);
+        })
     </script>
 </body>
 
