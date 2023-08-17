@@ -835,7 +835,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
 
                 taskEl.addEventListener('touchstart', function (e) {
                     touchStart = taskEl;
-                })
+                }, { passive: true })
 
                 taskEl.addEventListener('touchend', function () {
                     if (touchStart === taskEl) {
@@ -898,7 +898,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                 })
                 taskEl.addEventListener('touchmove', function () {
                     touchStart = null;
-                })
+                }, { passive: true })
             }
         }
 
@@ -1024,7 +1024,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
 
         tasks.addEventListener('touchstart', function (e) {
             tasksOffsetStart = e.touches[0].clientX;
-        })
+        }, { passive: true })
 
         tasks.addEventListener('touchmove', function (e) {
             tasksOffsetEnd = e.touches[0].clientX;
@@ -1089,7 +1089,7 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                 tasks.querySelector('.day-hover-tasks').style.opacity = '1';
             }
             tasks.style.transform = `translateX(${tasksOffset * 1.2}px)`;
-        })
+        }, { passive: true })
 
         tasks.addEventListener('touchend', async function (e) {
             tasksOnBlur = false;
