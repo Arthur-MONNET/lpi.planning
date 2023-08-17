@@ -830,14 +830,15 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
             for (const taskEl of tasksElements) {
                 const task = day.tasks[taskCounter];
                 taskCounter++;
-                // long press sur une tâche
-                let timer
-                const touchDuration = 300 //ms
+                let touchStart = null;
+                const touchDuration = 10 //ms
 
                 taskEl.addEventListener('touchstart', function (e) {
-                    timer = setTimeout(() => {
-                        // long press
-                        timer = null
+                    touchStart = taskEl;
+                })
+
+                taskEl.addEventListener('touchend', function () {
+                    if (touchStart === taskEl) {
                         if (this.classList.contains('current') || this.classList.contains('finished')) {
                             // task in progress
                             console.log('tâche en cours ou terminée')
@@ -847,8 +848,11 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                             const currentText = 'en cours';
                             const finishedText = 'terminé';
                             const finalText = `${task.start.format('HH:mm')} - ${task.end.format('HH:mm')}`;
+                            if(finalText === taskTimerText.textContent) {
+                                return;
+                            }
                             const taskTimerTextAnimationClear = setInterval(() => {
-                                if (taskTimerText.textContent.length > 0) {
+                                if (taskTimerText.textContent.length > 0 && finalText !== taskTimerText.textContent) {
                                     taskTimerText.textContent = taskTimerText.textContent.slice(0, -1);
                                 } else {
                                     clearInterval(taskTimerTextAnimationClear);
@@ -890,15 +894,10 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
                             // tâche à venir
                             console.log('tâche à venir')
                         }
-                    }, touchDuration)
-
-                })
-
-                taskEl.addEventListener('touchend', function () {
-                    clearTimeout(timer)
+                    }
                 })
                 taskEl.addEventListener('touchmove', function () {
-                    clearTimeout(timer)
+                    touchStart = null;
                 })
             }
         }
