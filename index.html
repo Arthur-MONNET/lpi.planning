@@ -986,20 +986,21 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
             tasksOnBlur = false;
             tasks.style.overflow = '';
             document.querySelector('main').style.overflow = '';
-            if (tasksOffset > tasks.offsetWidth / 3) {
+            if (tasksOffset > 30) {
                 // aller à la tâche precedente
                 console.log('aller à la tâche precedente')
                 tasksOffset = tasks.offsetWidth;
-            } else if (tasksOffset < -tasks.offsetWidth / 3) {
+            } else if (tasksOffset < -30) {
                 // aller à la tâche suivante
                 tasksOffset = -tasks.offsetWidth;
                 console.log('aller à la tâche suivante')
             } else {
                 // rester sur la tâche actuelle
+                console.log('rester sur la tâche actuelle', tasksOffset)
                 tasksOffset = 0;
                 tasks.querySelector('.day-hover-tasks').style.opacity = '0';
                 tasks.style.transform = `translateX(0px)`;
-                console.log('rester sur la tâche actuelle')
+                
                 document.querySelector('#next-or-prev-day>.day-name').innerText = ''
                 document.querySelector('#next-or-prev-day>.day-number').innerText = ''
                 document.querySelector('#next-or-prev-day>.day-month').innerText = ''
