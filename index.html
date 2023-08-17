@@ -798,8 +798,8 @@ data-day="${day.moment.format('DD-MM-YYYY')}">
         </div>
     </div>
     <div class="task-time flex flex-row justify-between items-end gap-[5px]">
-        <p class="task-start bg-${taskStart === 'en cours' ? '[#7296e3]' : (taskStart === 'terminé' ? '[#b9b9b9]' : 'transparent')} rounded-sm h-[21px] border border-solid text-${task.start.isBefore(now) ? 'white min-w-[0]' : '[#7296e3] min-w-[48px]'} border-${taskStart === 'terminé' ? '[#b9b9b9]' : '[#7296e3]'} font-medium px-[6px] mt-[4px] flex justify-center items-center whitespace-nowrap uppercase" style="font-size: 14px;">${taskStart}</p>
-        <p class="task-end bg-transparent rounded-sm border border-solid min-w-[48px] border-[#7296e3] text-[#7296e3] font-medium h-[21px] px-[6px] mt-[4px] flex justify-center items-center whitespace-nowrap uppercase ${task.start.isBefore(now) ? 'hidden' : ''}" style="font-size: 14px;">${task.end.format('HH:mm')}</p>
+        <p class="task-start bg-${taskStart === 'en cours' ? '[#7296e3]' : (taskStart === 'terminé' ? '[#b9b9b9]' : 'transparent')} rounded-sm h-[22px] border border-solid text-${task.start.isBefore(now) ? 'white min-w-[0]' : '[#7296e3] min-w-[48px]'} border-${taskStart === 'terminé' ? '[#b9b9b9]' : '[#7296e3]'} font-medium px-[6px] mt-[4px] flex justify-center items-center whitespace-nowrap uppercase" style="font-size: 14px;">${taskStart}</p>
+        <p class="task-end bg-transparent rounded-sm border border-solid min-w-[48px] border-[#7296e3] text-[#7296e3] font-medium h-[22px] px-[6px] mt-[4px] flex justify-center items-center whitespace-nowrap uppercase ${task.start.isBefore(now) ? 'hidden' : ''}" style="font-size: 14px;">${task.end.format('HH:mm')}</p>
     </div>
 </div>`
                 tasksWrapper.innerHTML += taskHTML;
