@@ -228,7 +228,7 @@ un système de mot de passe est mis en place pour accéder au planning
         };
         const workers = [
             {
-                name: 'Salarié',
+                name: 'Nathalie',
                 color: '#7f8fa6',
             },
             {
@@ -281,14 +281,14 @@ un système de mot de passe est mis en place pour accéder au planning
                 ],
                 tuesday: [
                     {
-                        worker: 0, // Valérie
+                        worker: 0, // Nathalie
                         task: 'ouverture + matinée',
                         start: moment('08:45', 'HH:mm'),
                         end: moment('13:00', 'HH:mm'),
                     },
                     {
                         worker: 1, // Myriam
-                        task: 'bureau',
+                        task: 'BUREAU',
                         start: moment('10:00', 'HH:mm'),
                         end: moment('15:00', 'HH:mm'),
                     },
@@ -345,14 +345,14 @@ un système de mot de passe est mis en place pour accéder au planning
                 ],
                 thursday: [
                     {
-                        worker: 0, // Valérie
+                        worker: 0, // Nathalie
                         task: 'ouverture + matinée',
                         start: moment('08:45', 'HH:mm'),
                         end: moment('13:00', 'HH:mm'),
                     },
                     {
                         worker: 1, // Myriam
-                        task: 'bureau',
+                        task: 'BUREAU',
                         start: moment('11:00', 'HH:mm'),
                         end: moment('15:00', 'HH:mm'),
                     },
@@ -377,14 +377,14 @@ un système de mot de passe est mis en place pour accéder au planning
                 ],
                 friday: [
                     {
-                        worker: 0, // Valérie
+                        worker: 0, // Nathalie
                         task: 'ouverture + matinée + midi',
                         start: moment('08:45', 'HH:mm'),
                         end: moment('15:00', 'HH:mm'),
                     },
                     {
                         worker: 1, // Myriam
-                        task: 'bureau',
+                        task: 'BUREAU',
                         start: moment('11:00', 'HH:mm'),
                         end: moment('15:00', 'HH:mm'),
                     },
@@ -421,7 +421,7 @@ un système de mot de passe est mis en place pour accéder au planning
                 ],
                 saturday: [
                     {
-                        worker: 0, // Valérie
+                        worker: 0, // Nathalie
                         task: 'journee complète',
                         start: moment('08:45', 'HH:mm'),
                         end: moment('20:00', 'HH:mm'),
@@ -450,7 +450,7 @@ un système de mot de passe est mis en place pour accéder au planning
             even: {
                 monday: [
                     {
-                        worker: 0, // Valérie
+                        worker: 0, // Nathalie
                         task: 'ouverture + matinée',
                         start: moment('08:45', 'HH:mm'),
                         end: moment('13:00', 'HH:mm'),
@@ -482,27 +482,39 @@ un système de mot de passe est mis en place pour accéder au planning
                 ],
                 tuesday: [
                     {
-                        worker: 0, // Valérie
+                        worker: 0, // Nathalie
                         task: 'ouverture + matinée',
                         start: moment('08:45', 'HH:mm'),
                         end: moment('13:00', 'HH:mm'),
                     },
                     {
-                        worker: 0, // Valérie
-                        task: 'bureau',
+                        worker: 0, // Nathalie
+                        task: 'Réunion d\'équipe',
                         start: moment('13:00', 'HH:mm'),
                         end: moment('15:00', 'HH:mm'),
                     },
                     {
-                        worker: 0, // Valérie
+                        worker: 0, // Nathalie
                         task: 'début d\'après-midi',
                         start: moment('15:00', 'HH:mm'),
                         end: moment('16:00', 'HH:mm'),
                     },
                     {
                         worker: 1, // Myriam
-                        task: 'bureau',
+                        task: 'BUREAU',
                         start: moment('10:00', 'HH:mm'),
+                        end: moment('13:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'Réunion d\'équipe',
+                        start: moment('13:00', 'HH:mm'),
+                        end: moment('15:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 1, // Myriam
+                        task: 'BUREAU',
+                        start: moment('15:00', 'HH:mm'),
                         end: moment('16:00', 'HH:mm'),
                     },
                     {
@@ -513,8 +525,14 @@ un système de mot de passe est mis en place pour accéder au planning
                     },
                     {
                         worker: 2, // Lucie
-                        task: 'midi + après-midi + fermeture',
+                        task: 'Réunion d\'équipe',
                         start: moment('13:00', 'HH:mm'),
+                        end: moment('15:00', 'HH:mm'),
+                    },
+                    {
+                        worker: 2, // Lucie
+                        task: 'après-midi + fermeture',
+                        start: moment('15:00', 'HH:mm'),
                         end: moment('20:00', 'HH:mm'),
                     },
                     {
@@ -558,14 +576,14 @@ un système de mot de passe est mis en place pour accéder au planning
                 ],
                 thursday: [
                     {
-                        worker: 0, // Valérie
+                        worker: 0, // Nathalie
                         task: 'ouverture + matinée',
                         start: moment('08:45', 'HH:mm'),
                         end: moment('13:00', 'HH:mm'),
                     },
                     {
                         worker: 1, // Myriam
-                        task: 'bureau',
+                        task: 'BUREAU',
                         start: moment('12:30', 'HH:mm'),
                         end: moment('15:00', 'HH:mm'),
                     },
@@ -590,14 +608,14 @@ un système de mot de passe est mis en place pour accéder au planning
                 ],
                 friday: [
                     {
-                        worker: 0, // Valérie
+                        worker: 0, // Nathalie
                         task: 'journee complète',
                         start: moment('08:45', 'HH:mm'),
                         end: moment('20:00', 'HH:mm'),
                     },
                     {
                         worker: 1, // Myriam
-                        task: 'bureau',
+                        task: 'BUREAU',
                         start: moment('09:00', 'HH:mm'),
                         end: moment('14:00', 'HH:mm'),
                     },
